@@ -3,7 +3,12 @@ let overlay = workspace.mkPyprojectOverlay {
       sourcePreference = "wheel";
     };
     pyprojectOverrides = final: prev: {
-      # overrides here
+      pybars3 = prev.pybars3.overrideAttrs (p:{
+        nativeBuildInputs = p.nativeBuildInputs ++ [final.setuptools];
+      });
+      pymeta3 = prev.pymeta3.overrideAttrs (p:{
+        nativeBuildInputs = p.nativeBuildInputs ++ [final.setuptools];
+      });
     };
 in
 (callPackage pyproject-nix.build.packages {
