@@ -1,6 +1,6 @@
 import datafusion as df
 import pyarrow as pa
-from vectorlink_py import template as tpl, dedup
+from vectorlink_py import template as tpl, dedup, embed
 
 INPUT_CSV_PATH = "musicbrainz-20-A01.csv.dapo"
 
@@ -40,6 +40,7 @@ def main():
         INPUT_CSV_PATH, file_extension=".dapo", schema=INPUT_CSV_SCHEMA
     )
 
+    print("templating..")
     tpl.write_templated_fields(
         dataframe,
         templates,
@@ -56,8 +57,12 @@ def main():
         ],
     )
 
+    print("dedupping..")
     for key in templates.keys():
         dedup.dedup_from_into(ctx, f"output/templated/{key}/", "output/dedup/")
+
+    print("vectorizing..")
+    embed.vectorize(ctx, "output/dedup/", "output/vectors/")
 
 
 if __name__ == "__main__":
