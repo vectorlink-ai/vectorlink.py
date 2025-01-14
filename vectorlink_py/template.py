@@ -38,14 +38,19 @@ def generate_template_udf(
 
 def template_frame(
     input_frame: DataFrame,
-    id_column: str,
     template: Union[Callable, str],
-    columns_of_interest: List[str],
+    id_column: str = "id",
+    columns_of_interest: Optional[List[str]] = None,
 ) -> DataFrame:
     if isinstance(template, str):
         compiled_template = Compiler().compile(template)
     else:
         compiled_template = template
+
+    if columns_of_interest is None:
+        columns_of_interest = [
+            name for name in input_frame.schema().names if name != id_column
+        ]
 
     template_udf = generate_template_udf(compiled_template, columns_of_interest)
     columns = [df.col(col) for col in columns_of_interest]
