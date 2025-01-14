@@ -41,6 +41,7 @@ def template_frame(
     template: Union[Callable, str],
     id_column: str = "id",
     columns_of_interest: Optional[List[str]] = None,
+    include_id=False,
 ) -> DataFrame:
     if isinstance(template, str):
         compiled_template = Compiler().compile(template)
@@ -48,9 +49,12 @@ def template_frame(
         compiled_template = template
 
     if columns_of_interest is None:
-        columns_of_interest = [
-            name for name in input_frame.schema().names if name != id_column
-        ]
+        if include_id:
+            columns_of_interest = [name for name in input_frame.schema().names]
+        else:
+            columns_of_interest = [
+                name for name in input_frame.schema().names if name != id_column
+            ]
 
     template_udf = generate_template_udf(compiled_template, columns_of_interest)
     columns = [df.col(col) for col in columns_of_interest]
