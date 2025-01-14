@@ -1,6 +1,6 @@
 import datafusion as df
 from pybars import Compiler
-from typing import Callable, Optional, List, Union
+from typing import Callable, Optional, List, Union, Dict
 import pyarrow as pa
 import pandas
 
@@ -61,3 +61,27 @@ def template_frame(
     return input_frame.select(
         df.col(id_column), template_udf(*columns).alias("templated")
     )
+
+
+def write_templated_fields(
+    source: DataFrame,
+    template_dict: Dict[str, str],
+    destination: str,
+    id_column="id",
+    columns_of_interest: Optional[List[str]] = None,
+    include_id=False,
+):
+    if destination[-1] != "/":
+        raise ValueError("path not ending in /")
+
+    for name, template in template_dict.items():
+        template_destination = f"{destination}{name}/"
+        result = template_frame(
+            source,
+            template,
+            id_column=id_column,
+            include_id=include_id,
+            columns_of_interest=columns_of_interest,
+        )
+
+        result.write_parquet(template_destination)
