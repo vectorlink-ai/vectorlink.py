@@ -33,8 +33,11 @@ def write_batched_embeddings(
 
 @backoff.on_exception(backoff.constant, oa.RateLimitError, interval=60)
 def get_embedding(strings, configuration):
-    response = oa.embeddings.create(input=strings, model=configuration["model"])
-
+    try:
+        response = oa.embeddings.create(input=strings, model=configuration["model"])
+    except Exception as e:
+        print(f"Unable to embed the following strings: {strings}")
+        raise e
     return [embedding.embedding for embedding in response.data]
 
 

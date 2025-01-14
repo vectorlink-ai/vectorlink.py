@@ -1,6 +1,7 @@
 import datafusion as df
 import pyarrow as pa
 from vectorlink_py import template as tpl, dedup, embed
+import sys
 
 INPUT_CSV_PATH = "musicbrainz-20-A01.csv.dapo"
 
@@ -12,9 +13,9 @@ templates = {
     "language": "{{#if language}}language: {{language}}\n{{/if}}",
 }
 
-templates["composite"] = (
-    f"{templates['title']}{templates['artist']}{templates['album']}{templates['year']}{templates['language']}"
-)
+templates[
+    "composite"
+] = f"{templates['title']}{templates['artist']}{templates['album']}{templates['year']}{templates['language']}"
 
 INPUT_CSV_SCHEMA = pa.schema(
     [
@@ -35,12 +36,13 @@ INPUT_CSV_SCHEMA = pa.schema(
 
 
 def main():
-    ctx = df.SessionContext()
+    sc = df.SessionConfig().with_batch_size(10)
+    ctx = df.SessionContext(config=sc)
     dataframe = ctx.read_csv(
         INPUT_CSV_PATH, file_extension=".dapo", schema=INPUT_CSV_SCHEMA
     )
 
-    print("templating..")
+    print("templating..", file=sys.stderr)
     tpl.write_templated_fields(
         dataframe,
         templates,
@@ -57,11 +59,11 @@ def main():
         ],
     )
 
-    print("dedupping..")
+    print("dedupping..", file=sys.stderr)
     for key in templates.keys():
         dedup.dedup_from_into(ctx, f"output/templated/{key}/", "output/dedup/")
 
-    print("vectorizing..")
+    print("vectorizing..", file=sys.stderr)
     embed.vectorize(ctx, "output/dedup/", "output/vectors/")
 
 

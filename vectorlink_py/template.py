@@ -14,7 +14,6 @@ def clean_record(record):
 def generate_template_udf(
     compiled_template: Callable, names: List[str], template_name: Optional[str] = None
 ) -> df.ScalarUDF:
-
     def template_udf(*args: pa.StringArray) -> pa.StringArray:
         templated_strings = []
         for record in (
@@ -25,7 +24,7 @@ def generate_template_udf(
             record = clean_record(record)
             result = compiled_template(record)
             if result.isspace():
-                # force whitespace results to be the empty s tring
+                # force whitespace results to be the empty string
                 result = ""
 
             templated_strings.append(result)
@@ -60,7 +59,7 @@ def template_frame(
     columns = [df.col(col) for col in columns_of_interest]
     return input_frame.select(
         df.col(id_column), template_udf(*columns).alias("templated")
-    )
+    ).filter(df.col("templated") != "")
 
 
 def write_templated_fields(
