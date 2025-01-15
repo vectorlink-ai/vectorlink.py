@@ -84,7 +84,7 @@ def main():
 
     eprintln("averaging (for imputation)...")
     for key in templates.keys():
-        write_field_averages(
+        records.write_field_averages(
             ctx, "output/templated", key, "output/vectors/", "output/vector_averages"
         )
 
