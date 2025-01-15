@@ -57,9 +57,15 @@ def template_frame(
 
     template_udf = generate_template_udf(compiled_template, columns_of_interest)
     columns = [df.col(col) for col in columns_of_interest]
-    return input_frame.select(
-        df.col(id_column), template_udf(*columns).alias("templated")
-    ).filter(df.col("templated") != "")
+    return (
+        input_frame.select(df.col(id_column), template_udf(*columns).alias("templated"))
+        .select(
+            df.col(id_column),
+            df.col("templated"),
+            df.functions.md5(df.col("templated")).alias("hash"),
+        )
+        .filter(df.col("templated") != "")
+    )
 
 
 def write_templated_fields(

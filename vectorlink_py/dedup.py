@@ -11,18 +11,10 @@ templated_table_schema = pa.schema(
 
 
 def dedup_dataframe(dataframe: DataFrame) -> DataFrame:
-    return (
-        dataframe.select(df.col("templated"), df.functions.md5(df.col("templated")))
-        .aggregate(
-            df.col("templated"),
-            [
-                df.functions.first_value(df.functions.md5(df.col("templated"))).alias(
-                    "hash"
-                )
-            ],
-        )
-        .select(df.col("hash"), df.col("templated"))
-    )
+    return dataframe.aggregate(
+        df.col("templated"),
+        [df.functions.first_value(df.col("hash")).alias("hash")],
+    ).select(df.col("hash"), df.col("templated"))
 
 
 def dedup_from_into(ctx: SessionContext, source: str, destination: str):

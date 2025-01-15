@@ -1,7 +1,19 @@
 import datafusion as df
 import pyarrow as pa
-from vectorlink_py import template as tpl, dedup, embed
+from vectorlink_py import template as tpl, dedup, embed, records
 import sys
+
+"""
+Matching process
+
+1. Vectorize fields from records
+2. Index vectors
+3. Train classifier on record data or use LLM to classify
+   a. If using LLM, find likely and unlikely matches using index
+4. Use neighbors within threshold as filter for match candidates
+5. Run trained classifier on records
+"""
+
 
 INPUT_CSV_PATH = "musicbrainz-20-A01.csv.dapo"
 
@@ -35,6 +47,10 @@ INPUT_CSV_SCHEMA = pa.schema(
 )
 
 
+def eprintln(string):
+    print(string, file=sys.stderr)
+
+
 def main():
     sc = df.SessionConfig().with_batch_size(10)
     ctx = df.SessionContext(config=sc)
@@ -42,7 +58,7 @@ def main():
         INPUT_CSV_PATH, file_extension=".dapo", schema=INPUT_CSV_SCHEMA
     )
 
-    print("templating..", file=sys.stderr)
+    eprintln("templating...")
     tpl.write_templated_fields(
         dataframe,
         templates,
@@ -59,12 +75,20 @@ def main():
         ],
     )
 
-    print("dedupping..", file=sys.stderr)
+    eprintln("dedupping...")
     for key in templates.keys():
         dedup.dedup_from_into(ctx, f"output/templated/{key}/", "output/dedup/")
 
-    print("vectorizing..", file=sys.stderr)
+    eprintln("vectorizing...")
     embed.vectorize(ctx, "output/dedup/", "output/vectors/")
+
+    eprintln("averaging (for imputation)...")
+    for key in templates.keys():
+        write_field_averages(
+            ctx, "output/templated", key, "output/vectors/", "output/vector_averages"
+        )
+
+    eprintln("index field...")
 
 
 if __name__ == "__main__":
