@@ -38,8 +38,9 @@ def write_field_averages(
 ):
     fv = field_vectors(ctx, f"{template_source}/{key}/", vector_source)
     average = torch.mean(fv, 1).numpy()
-    dataframe = pd.DataFrame({"template": [key], "average": [average]})
-    df.from_pandas(dataframe).write_parquet(destination)
+    pandas_df = pd.DataFrame({"template": [key], "average": [average]})
+    datafusion_df = ctx.from_arrow(pandas_df)
+    datafusion_df.write_parquet(destination)
 
 
 def field_vectors(
