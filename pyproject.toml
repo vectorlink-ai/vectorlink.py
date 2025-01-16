@@ -13,3 +13,7 @@ dependencies = [
     "pybars3>=0.9.7",
     "torch>=2.5.1",
 ]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
