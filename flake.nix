@@ -19,6 +19,8 @@
       inputs.uv2nix.follows = "uv2nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    pyproject-nix-overrides.url = "github:vectorlink-ai/pyproject-nix-overrides";
   };
 
 
@@ -28,16 +30,24 @@
       pyproject-nix,
       uv2nix,
       pyproject-build-systems,
+      pyproject-nix-overrides,
       ...
   }:
     flake-utils.lib.eachDefaultSystem (system:
       let
-        pkgs = nixpkgs.legacyPackages.${system};
+        pkgs = import nixpkgs {
+          inherit system;
+          config = {
+            allowUnfree = true;
+            cudaSupport = true;
+          };
+        };
         workspace = uv2nix.lib.workspace.loadWorkspace {
           workspaceRoot = ./.;
         };
         pythonSet = pkgs.callPackage ./nix/uv-python.nix {
           inherit pyproject-nix pyproject-build-systems workspace;
+          pyproject-overrides = pyproject-nix-overrides.overrides pkgs;
         };
       in
       {

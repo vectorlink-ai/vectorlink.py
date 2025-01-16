@@ -1,14 +1,6 @@
-{pyproject-nix, pyproject-build-systems, cudaPackages, lib, workspace, python3, callPackage}:
+{pyproject-nix, pyproject-build-systems, pyproject-overrides, cudaPackages, lib, workspace, python3, callPackage}:
 let overlay = workspace.mkPyprojectOverlay {
       sourcePreference = "wheel";
-    };
-    pyprojectOverrides = final: prev: {
-      pybars3 = prev.pybars3.overrideAttrs (p:{
-        nativeBuildInputs = p.nativeBuildInputs ++ [final.setuptools];
-      });
-      pymeta3 = prev.pymeta3.overrideAttrs (p:{
-        nativeBuildInputs = p.nativeBuildInputs ++ [final.setuptools];
-      });
     };
 in
 (callPackage pyproject-nix.build.packages {
@@ -17,6 +9,7 @@ in
   lib.composeManyExtensions [
     pyproject-build-systems.overlays.default
     overlay
-    pyprojectOverrides
+    pyproject-overrides.cuda
+    pyproject-overrides.default
   ]
 )

@@ -80,12 +80,28 @@
         "type": "github"
       }
     },
+    "pyproject-nix-overrides": {
+      "locked": {
+        "lastModified": 1737028254,
+        "narHash": "sha256-uDkBXQrsp13HSLn8jlhSaPmuKSU7su01TtLoHtTBxOY=",
+        "owner": "vectorlink-ai",
+        "repo": "pyproject-nix-overrides",
+        "rev": "4bf6e261ed56ef12a3ec802dcfa4d7fb78306469",
+        "type": "github"
+      },
+      "original": {
+        "owner": "vectorlink-ai",
+        "repo": "pyproject-nix-overrides",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
         "flake-utils": "flake-utils",
         "nixpkgs": "nixpkgs",
         "pyproject-build-systems": "pyproject-build-systems",
         "pyproject-nix": "pyproject-nix",
+        "pyproject-nix-overrides": "pyproject-nix-overrides",
         "uv2nix": "uv2nix"
       }
     },
