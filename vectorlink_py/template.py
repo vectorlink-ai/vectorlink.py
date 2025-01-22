@@ -80,7 +80,7 @@ def write_templated_fields(
         raise ValueError("path not ending in /")
 
     for name, template in template_dict.items():
-        template_destination = f"{destination}{name}/"
+        template_destination = f"{destination}key={name}/"
         result = template_frame(
             source,
             template,
