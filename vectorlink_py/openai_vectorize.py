@@ -27,10 +27,8 @@ def embeddings_pylist_to_table(
 
 def write_batched_embeddings(ctx, batched_ids, batched_strings, destination, **kwargs):
     embedding_kwargs = {key: value for key, value in kwargs.items() if key in ["model"]}
-    embeddings = get_embedding(batched_strings, configuration, **embedding_kwargs)
-    table_kwargs = {
-        key: value for key, value in kwargs.items() if key in ["model", "dimension"]
-    }
+    embeddings = get_embedding(batched_strings, **embedding_kwargs)
+    table_kwargs = {key: value for key, value in kwargs.items() if key in ["dimension"]}
     table = embeddings_pylist_to_table(batched_ids, embeddings, **table_kwargs)
     ctx.from_arrow_table(table).write_parquet(destination)
 
@@ -50,6 +48,7 @@ def get_embedding(
     return [embedding.embedding for embedding in response.data]
 
 
+# TODO make this accept a dataframe rather than a stream
 def vectorize(
     ctx: df.SessionContext,
     stream: df.RecordBatchStream,
@@ -65,7 +64,7 @@ def vectorize(
     for result in stream:
         for element in result.to_pyarrow().to_pylist():
             batched_ids.append(element["hash"])
-            batched_strings.append(element["embedding"])
+            batched_strings.append(element["templated"])
             if len(batched_strings) == 1000:
                 write_batched_embeddings(
                     ctx,
