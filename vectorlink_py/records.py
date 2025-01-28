@@ -47,11 +47,9 @@ def field_vectors(
     ctx: SessionContext,
     source: str,
     vector_source: str,
-    configuration: Optional[Dict] = None,
+    dimension: int = 1536,
+    field_type: str = "float32",
 ) -> Tensor:
-    if configuration is None:
-        # defaults to OpenAI dimensions / datatype
-        configuration = {"dimensions": 1536, "field_type": "float32"}
     template_df: DataFrame = ctx.read_parquet(source)
     vector_df: DataFrame = ctx.read_parquet(vector_source).select(
         df.col("hash").alias("embedding_hash"), df.col("embedding")
@@ -60,9 +58,7 @@ def field_vectors(
         vector_df, left_on="hash", right_on="embedding_hash", how="inner"
     ).select(df.col("embedding"))
     size = result.count()
-    dim = configuration["dimensions"]
-    field_type = configuration["field_type"]
     dtype = name_to_torch_type(field_type)
-    tensor = torch.empty((size, dim), dtype=dtype)
+    tensor = torch.empty((size, dimension), dtype=dtype)
     dataframe_to_tensor(result, tensor)
     return tensor
