@@ -65,6 +65,7 @@ def template_frame(
             df.functions.md5(df.col("templated")).alias("hash"),
         )
         .filter(df.col("templated") != "")
+        .sort(df.col(id_column))
     )
 
 
