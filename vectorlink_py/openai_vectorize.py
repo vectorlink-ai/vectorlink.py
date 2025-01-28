@@ -33,6 +33,7 @@ def write_batched_embeddings(ctx, batched_ids, batched_strings, destination, **k
     ctx.from_arrow_table(table).write_parquet(destination)
 
 
+# TODO this should take an openai client as an argument so we can mock
 @backoff.on_exception(backoff.constant, oa.RateLimitError, interval=60)
 def get_embedding(
     strings,
@@ -58,7 +59,6 @@ def vectorize(
     ] = "text-embedding-3-small",
     dimension=1536,
 ):
-    openai_client = oa.Client()
     batched_ids = []
     batched_strings = []
     for result in stream:
