@@ -59,6 +59,7 @@ def vectorize(
         "text-embedding-3-small", "text-embedding-3-large", "text-embedding-ada-002"
     ] = "text-embedding-3-small",
     dimension=1536,
+    batch_size=1000,
 ):
     batched_ids = []
     batched_strings = []
@@ -66,7 +67,7 @@ def vectorize(
         for element in result.to_pyarrow().to_pylist():
             batched_ids.append(element["hash"])
             batched_strings.append(element["templated"])
-            if len(batched_strings) == 1000:
+            if len(batched_strings) == batch_size:
                 write_batched_embeddings(
                     ctx,
                     batched_ids,

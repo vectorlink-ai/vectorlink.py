@@ -38,20 +38,20 @@ def vectorize(
     ctx: df.SessionContext,
     source: str,
     destination: str,
-    configuration: Optional[Dict] = None,
+    model: Literal[
+        "text-embedding-3-small", "text-embedding-3-large", "text-embedding-ada-002"
+    ] = "text-embedding-3-small",
+    dimension=1536,
+    batch_size=1000,
 ) -> df.DataFrame:
-    if configuration is None:
-        configuration = {
-            "provider": "OpenAI",
-            "max_batch_size": 200 * 2**20,
-            "dimension": 1536,
-            "model": "text-embedding-3-small",
-        }
-
     df = get_unembedded(ctx, source, destination, configuration)
 
-    if configuration["provider"] == "OpenAI":
-        stream = df.execute_stream()
-        return openai_vectorize.vectorize(ctx, stream, destination, configuration)
-    else:
-        raise Exception("No known vectorization provider")
+    stream = df.execute_stream()
+    return openai_vectorize.vectorize(
+        ctx,
+        stream,
+        destination,
+        model=model,
+        dimension=dimension,
+        batch_size=batch_size,
+    )
