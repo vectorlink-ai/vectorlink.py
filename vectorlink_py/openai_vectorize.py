@@ -42,6 +42,7 @@ def get_embedding(
     ] = "text-embedding-3-small",
 ):
     try:
+        strings = [json.dumps(string) for string in strings]
         response = oa.embeddings.create(input=strings, model=model)
     except Exception as e:
         print(f"Unable to embed the following strings: {strings}")
