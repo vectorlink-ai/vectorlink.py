@@ -5,12 +5,7 @@ from typing import Dict, Optional, Literal
 from . import openai_vectorize
 
 
-def embedding_schema(configuration: Optional[Dict]):
-    if configuration is not None:
-        dimension = configuration["dimension"]
-    else:
-        dimension = 1536
-
+def embedding_schema(dimension=1536):
     embed_table_schema = pa.schema(
         [
             pa.field("hash", pa.string_view(), nullable=False),
@@ -21,13 +16,10 @@ def embedding_schema(configuration: Optional[Dict]):
 
 
 def get_unembedded(
-    ctx: SessionContext,
-    source: str,
-    destination: str,
-    configuration: Optional[Dict] = None,
+    ctx: SessionContext, source: str, destination: str, dimension=1536
 ) -> DataFrame:
     already_vectorized = ctx.read_parquet(
-        destination, schema=embedding_schema(configuration)
+        destination, schema=embedding_schema(dimension=dimension)
     ).select(df.col("hash"))
     return ctx.read_parquet(source).join(
         already_vectorized, left_on="hash", right_on="hash", how="anti"
@@ -44,7 +36,7 @@ def vectorize(
     dimension=1536,
     batch_size=1000,
 ) -> df.DataFrame:
-    df = get_unembedded(ctx, source, destination, configuration)
+    df = get_unembedded(ctx, source, destination, dimension=dimension)
 
     stream = df.execute_stream()
     return openai_vectorize.vectorize(
