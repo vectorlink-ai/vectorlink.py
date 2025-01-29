@@ -1,7 +1,7 @@
 import datafusion as df
 import pyarrow as pa
 from datafusion import DataFrame, SessionContext
-from typing import Dict, Optional
+from typing import Dict, Optional, Literal
 from . import openai_vectorize
 
 
