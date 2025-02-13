@@ -10,6 +10,9 @@ mkShell {
     virtualenv
     uv
   ];
+  env = {
+    UV_NO_SYNC = 1;
+  };
   shellHook = ''
     # Undo dependency propagation by nixpkgs.
     unset PYTHONPATH
