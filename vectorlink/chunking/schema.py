@@ -10,13 +10,12 @@ CHUNK_RANGE_TYPE = pa.struct(
 
 CHUNK_SCHEMA = pa.schema(
     [
-        pa.field("document_id", pa.string_view(), nullable=False),
-        pa.field("chunk_index", pa.uint32(), nullable=False),
         pa.field(
             "chunk_range",
             CHUNK_RANGE_TYPE,
             nullable=False,
         ),
         pa.field("chunk", pa.string_view(), nullable=False),
+        pa.field("hash", pa.string_view(), nullable=False),
     ]
 )
