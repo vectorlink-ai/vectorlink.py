@@ -12,6 +12,7 @@ dependencies = [
     "pandas-stubs>=2.2.3.241126",
     "pandas>=2.2.3",
     "pybars3>=0.9.7",
+    "tiktoken>=0.8.0",
     "torch>=2.5.1",
 ]
 
