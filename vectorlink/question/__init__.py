@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Dict
 from openai import Client
 import json
 import openai
@@ -25,3 +25,26 @@ def generate_questions(text: str, examples: List[str] = []) -> List[str]:
     )
 
     return json.loads(response.choices[0].message.content)
+
+
+def rate_content_relevance(prompt: str, fragment: str) -> Dict:
+    client = Client()
+    result = (
+        client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {
+                    "role": "system",
+                    "content": "You score relevance of a fragment of text to answering a given question. Score should be between 1 and 10. Give reasons for the scoring. A fragment with false information should still be considered relevant. Score should be on the last line with nothing else on it. This is very important. Also, do not use any markdown.",
+                },
+                {
+                    "role": "user",
+                    "content": f"question: {prompt}\ntext fragment: {fragment}",
+                },
+            ],
+        )
+        .choices[0]
+        .message.content
+    )
+
+    return {"response": result, "score": int(result.split("\n")[-1])}
