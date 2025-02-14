@@ -1,4 +1,4 @@
-from protocol import *
+from .protocol import *
 from typing import List
 
 

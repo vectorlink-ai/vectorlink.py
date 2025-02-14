@@ -1,7 +1,7 @@
 # chunking -> embedding -> evaluation
-from protocol import *
-from token_window import *
-from schema import *
+from .protocol import *
+from .token_window import *
+from .schema import *
 
 import pyarrow as pa
 
