@@ -15,7 +15,7 @@ CHUNK_SCHEMA = pa.schema(
             CHUNK_RANGE_TYPE,
             nullable=False,
         ),
-        pa.field("chunk", pa.string_view(), nullable=False),
+        pa.field("text", pa.string_view(), nullable=False),
         # pa.field("hash", pa.string_view(), nullable=False),
     ]
 )

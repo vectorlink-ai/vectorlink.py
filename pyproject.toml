@@ -14,8 +14,12 @@ dependencies = [
     "pybars3>=0.9.7",
     "tiktoken>=0.8.0",
     "torch>=2.5.1",
+    "vectorlink-gpu>=0.1.0",
 ]
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.uv.sources]
+vectorlink-gpu = { git = "ssh://git@github.com/vectorlink-ai/vectorlink-gpu" }

@@ -6,7 +6,7 @@ from .schema import *
 import pyarrow as pa
 
 
-def chunk_text(chunker: Chunker, document_id: str, text: str) -> pa.Table:
+def chunk_text(chunker: Chunker, text: str) -> pa.Table:
     ranges = chunker.generate_chunks(text)
     range_array = pa.array(list([r.__dict__ for r in ranges]), type=CHUNK_RANGE_TYPE)
     chunk_array = pa.array(
