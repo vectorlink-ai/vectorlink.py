@@ -19,7 +19,7 @@ def dataframe_to_tensor(df: DataFrame, tensor: Tensor):
     for batch in stream:
         embeddings = batch.to_pyarrow().column(0)
         embeddings_ptr = ctypes.cast(
-            embeddings.buffers()[3].address, ctypes.POINTER(ctype)
+            embeddings.buffers()[-1].address, ctypes.POINTER(ctype)
         )
         embeddings_tensor = torch.tensor(
             np.ctypeslib.as_array(embeddings_ptr, (len(embeddings), dim))
@@ -35,8 +35,11 @@ def write_field_averages(
     key: str,
     vector_source: str,
     destination: str,
+    dimension: int = 1536,
 ):
-    fv = field_vectors(ctx, f"{template_source}/{key}/", vector_source)
+    fv = field_vectors(
+        ctx, f"{template_source}/{key}/", vector_source, dimension=dimension
+    )
     average = torch.mean(fv, 1).numpy()
     pandas_df = pd.DataFrame({"template": [key], "average": [average]})
     datafusion_df = ctx.from_arrow(pandas_df)
