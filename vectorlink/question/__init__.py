@@ -3,6 +3,8 @@ from openai import Client
 import json
 import openai
 import backoff
+import datafusion as df
+import pyarrow as pa
 
 
 @backoff.on_exception(
@@ -12,6 +14,7 @@ import backoff
     interval=0.01,
 )
 def generate_questions(text: str, examples: List[str] = []) -> List[str]:
+    # TODO: make examples do something
     client = Client()
     response = client.chat.completions.create(
         model="gpt-4o",
@@ -48,3 +51,21 @@ def rate_content_relevance(prompt: str, fragment: str) -> Dict:
     )
 
     return {"response": result, "score": int(result.split("\n")[-1])}
+
+
+def generate_questions_udf_fn(chunks: pa.Array) -> pa.Array:
+    results = []
+    for chunk in chunks:
+        result = generate_questions(str(chunk))
+        print(result)
+        results.append(result)
+    return pa.array(results, type=pa.list_(pa.string_view()))
+
+
+generate_questions_udf = df.udf(
+    generate_questions_udf_fn,
+    [pa.string_view()],
+    pa.list_(pa.string_view()),
+    "stable",
+    name="generate_questions",
+)
