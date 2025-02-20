@@ -10,11 +10,16 @@ mkShell {
     virtualenv
     uv
   ];
+  env = {
+    UV_NO_SYNC = 1;
+  };
   shellHook = ''
     # Undo dependency propagation by nixpkgs.
     unset PYTHONPATH
     # Get repository root using git. This is expanded at runtime by the editable `.pth` machinery.
     export REPO_ROOT=$(git rev-parse --show-toplevel)
+    export CUDA_HOME=${cudatoolkit}
+    export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:${cudaPackages.cuda_nvcc}/nvvm/lib64:${lib.makeLibraryPath [cudatoolkit]}"
   '';
 }
 

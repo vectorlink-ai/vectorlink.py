@@ -11,5 +11,6 @@ in
     overlay
     pyproject-overrides.cuda
     pyproject-overrides.default
+    pyproject-overrides.vectorlink-source-projects
   ]
 )
