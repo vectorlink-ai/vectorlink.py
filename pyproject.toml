@@ -12,7 +12,7 @@ dependencies = [
     "pandas-stubs>=2.2.3.241126",
     "pandas>=2.2.3",
     "pybars3>=0.9.7",
-    "torch>=2.5.1",
+    "torch (>=2.5.1,<2.6)",
     "vectorlink-gpu>=0.1.0",
 ]
 

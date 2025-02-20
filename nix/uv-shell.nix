@@ -3,7 +3,19 @@ let editableOverlay = workspace.mkEditablePyprojectOverlay {
       # Use environment variable
       root = "$REPO_ROOT";
     };
-    editablePythonSet = pythonSet.overrideScope editableOverlay;
+    editablePythonSet = pythonSet.overrideScope (
+      lib.composeManyExtensions [
+        editableOverlay
+        (final:  prev: {
+          vectorlink = prev.vectorlink.overrideAttrs (old: {
+            nativeBuildInputs =
+              old.nativeBuildInputs
+              ++ final.resolveBuildSystem {
+                editables = [ ];
+              };
+          });
+        })
+      ]);
     virtualenv = editablePythonSet.mkVirtualEnv "vectorlink-py-env" workspace.deps.all; in
 mkShell {
   packages = [
