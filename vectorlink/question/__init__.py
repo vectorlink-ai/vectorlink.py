@@ -67,6 +67,35 @@ CONTENT_RELEVANCE_STRUCT_SCHEMA = pa.struct(
 )
 
 
+@backoff.on_exception(
+    backoff.constant,
+    (json.decoder.JSONDecodeError,),
+    max_tries=3,
+    interval=0.01,
+)
+def generate_keyphrases_from_question(question: str) -> List[str]:
+    client = Client()
+    result = (
+        client.chat.completions.create(
+            model="gpt-4o",
+            messages=[
+                {
+                    "role": "system",
+                    "content": """You extract key phrases from questions regarding their topic. You return these as a json list. Do not use markdown. For example, the question 'What age is mark?' should result in something like ["mark's age", "age of mark"]""",
+                },
+                {
+                    "role": "user",
+                    "content": question,
+                },
+            ],
+        )
+        .choices[0]
+        .message.content
+    )
+
+    return json.loads(result)
+
+
 def generate_questions_udf_fn(chunks: pa.Array) -> pa.Array:
     results = []
     for chunk in chunks:
@@ -104,4 +133,24 @@ rate_content_relevance_udf = df.udf(
     CONTENT_RELEVANCE_STRUCT_SCHEMA,
     "stable",
     name="rate_content_relevance",
+)
+
+
+def generate_keyphrases_from_question_udf_fn(questions: pa.Array) -> pa.Array:
+    results = []
+    for i in range(0, len(questions)):
+        question = str(questions[i])
+
+        result = generate_keyphrases_from_question(question)
+        results.append(result)
+
+    return pa.array(results, type=pa.list_(pa.string_view()))
+
+
+generate_keyphrases_from_question_udf = df.udf(
+    generate_keyphrases_from_question_udf_fn,
+    [pa.string_view()],
+    pa.list_(pa.string_view()),
+    "stable",
+    name="generate_keyphrases_from_questions",
 )
