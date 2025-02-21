@@ -21,7 +21,7 @@ def generate_questions(text: str, examples: List[str] = []) -> List[str]:
         messages=[
             {
                 "role": "system",
-                "content": """You generate questions based on given text. You generate 100 questions. Generate as a JSON list of questions. It is VERY important that it is JSON. Like, super important. Really, don't give anything back that is not JSON. Do NOT use markdown.\nExample output: ["Who went to the store?", "Where did Luke go?"]""",
+                "content": """You generate questions based on given text. You generate 10 questions. Generate as a JSON list of questions. It is VERY important that it is JSON. Like, super important. Really, don't give anything back that is not JSON. Do NOT use markdown.\nExample output: ["Who went to the store?", "Where did Luke go?"]""",
             },
             {"role": "user", "content": text},
         ],
@@ -53,6 +53,14 @@ def rate_content_relevance(prompt: str, fragment: str) -> Dict:
     return {"response": result, "score": int(result.split("\n")[-1])}
 
 
+CONTENT_RELEVANCE_STRUCT_SCHEMA = pa.struct(
+    [
+        pa.field("response", pa.string_view(), nullable=False),
+        pa.field("score", pa.uint8(), nullable=False),
+    ]
+)
+
+
 def generate_questions_udf_fn(chunks: pa.Array) -> pa.Array:
     results = []
     for chunk in chunks:
@@ -68,4 +76,26 @@ generate_questions_udf = df.udf(
     pa.list_(pa.string_view()),
     "stable",
     name="generate_questions",
+)
+
+
+def rate_content_relevance_udf_fn(questions: pa.Array, fragments: pa.Array) -> pa.Array:
+    results = []
+    for i in range(0, len(questions)):
+        question = str(questions[i])
+        fragment = str(fragments[i])
+
+        result = rate_content_relevance(question, fragment)
+        print(result)
+        results.append(result)
+
+    return pa.array(results, type=CONTENT_RELEVANCE_STRUCT_SCHEMA)
+
+
+rate_content_relevance_udf = df.udf(
+    rate_content_relevance_udf_fn,
+    [pa.string_view(), pa.string_view()],
+    CONTENT_RELEVANCE_STRUCT_SCHEMA,
+    "stable",
+    name="rate_content_relevance",
 )
