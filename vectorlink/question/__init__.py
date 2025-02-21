@@ -30,6 +30,12 @@ def generate_questions(text: str, examples: List[str] = []) -> List[str]:
     return json.loads(response.choices[0].message.content)
 
 
+@backoff.on_exception(
+    backoff.constant,
+    (ValueError,),
+    max_tries=3,
+    interval=0.01,
+)
 def rate_content_relevance(prompt: str, fragment: str) -> Dict:
     client = Client()
     result = (
